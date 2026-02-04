@@ -3,39 +3,36 @@
  */
 
 const RAGEngine = require('../app/rag-engine');
-const { requireAuth } = require('./auth');
 
-let ragEngine;
-let initPromise;
+let ragEngine = null;
 
 async function initializeRAG() {
   if (!ragEngine) {
-    if (!initPromise) {
-      initPromise = (async () => {
-        const apiKey = process.env.OPENAI_API_KEY;
-        if (!apiKey) {
-          throw new Error('OPENAI_API_KEY not found');
-        }
-        ragEngine = new RAGEngine(apiKey);
-        await ragEngine.initialize();
-      })();
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      throw new Error('OPENAI_API_KEY not configured');
     }
-    await initPromise;
+    ragEngine = new RAGEngine(apiKey);
+    await ragEngine.initialize();
   }
   return ragEngine;
 }
 
-async function handler(req, res) {
+module.exports = async (req, res) => {
   // Enable CORS
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, X-Access-Password');
-  
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  );
+
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    res.status(200).end();
+    return;
   }
-  
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -46,29 +43,20 @@ async function handler(req, res) {
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
     }
-    
-    console.log(`[${new Date().toISOString()}] Query: ${message}`);
-    
-    // Initialize RAG engine
+
     const engine = await initializeRAG();
-    
-    // Get response
     const result = await engine.chat(message);
     
-    console.log(`✓ Response generated (${result.sources.length} sources used)`);
-    
-    return res.status(200).json({
+    res.status(200).json({
       answer: result.answer,
       sources: result.sources,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Error handling chat request:', error);
-    return res.status(500).json({
+    console.error('Chat error:', error);
+    res.status(500).json({
       error: 'Failed to generate response',
       message: error.message
     });
   }
-}
-
-module.exports = requireAuth(handler);
+};
