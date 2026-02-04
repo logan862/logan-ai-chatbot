@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logan AI - TikTok Shop Expert</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            max-height: 700px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .logout-btn {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f5f7fb;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: #10b981;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 15px;
+            border-radius: 15px;
+            line-height: 1.6;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .message.user .message-content {
+            background: #10b981;
+            color: white;
+        }
+
+        .sources {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .sources-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .source-link {
+            display: block;
+            font-size: 12px;
+            color: #667eea;
+            text-decoration: none;
+            margin-bottom: 5px;
+        }
+
+        .source-link:hover {
+            text-decoration: underline;
+        }
+
+        .input-area {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 25px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-field:focus {
+            border-color: #667eea;
+        }
+
+        .send-button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .send-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 15px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+        }
+
+        .welcome-message h2 {
+            color: #374151;
+            margin-bottom: 10px;
+        }
+
+        /* Login Modal */
+        .login-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .login-box h2 {
+            color: #374151;
+            margin-bottom: 10px;
+        }
+
+        .login-box p {
+            color: #6b7280;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 15px;
+            margin-bottom: 15px;
+            outline: none;
+        }
+
+        .login-input:focus {
+            border-color: #667eea;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Modal -->
+    <div class="login-modal" id="loginModal">
+        <div class="login-box">
+            <h2>🔒 Member Access</h2>
+            <p>Enter your access password to continue</p>
+            <input 
+                type="password" 
+                class="login-input" 
+                id="passwordInput" 
+                placeholder="Enter password"
+                autocomplete="off"
+            />
+            <button class="login-button" id="loginButton">Access Chatbot</button>
+            <div class="error-message hidden" id="errorMessage">Invalid password. Please try again.</div>
+        </div>
+    </div>
+
+    <!-- Main Chat Interface -->
+    <div class="container hidden" id="mainContainer">
+        <div class="header">
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+            <h1>🚀 Logan AI</h1>
+            <p>Your 24/7 TikTok Shop Expert - Ask Me Anything!</p>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+                <h2>👋 Hey! I'm Logan's AI Assistant</h2>
+                <p>I've been trained on all of Logan's TikTok Shop content. Ask me anything about:</p>
+                <p><strong>Product research • Content strategy • Growing your account • Making money • Scaling your business</strong></p>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-wrapper">
+                <input 
+                    type="text" 
+                    class="input-field" 
+                    id="userInput" 
+                    placeholder="Ask me about TikTok Shop strategies..."
+                    autocomplete="off"
+                />
+                <button class="send-button" id="sendButton">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Authentication
+        const loginModal = document.getElementById('loginModal');
+        const mainContainer = document.getElementById('mainContainer');
+        const passwordInput = document.getElementById('passwordInput');
+        const loginButton = document.getElementById('loginButton');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const errorMessage = document.getElementById('errorMessage');
+
+        let accessPassword = localStorage.getItem('logan_ai_password');
+
+        function showLogin() {
+            loginModal.classList.remove('hidden');
+            mainContainer.classList.add('hidden');
+            passwordInput.focus();
+        }
+
+        function showMain() {
+            loginModal.classList.add('hidden');
+            mainContainer.classList.remove('hidden');
+            userInput.focus();
+        }
+
+        function logout() {
+            localStorage.removeItem('logan_ai_password');
+            accessPassword = null;
+            showLogin();
+        }
+
+        async function verifyPassword(password) {
+            try {
+                const response = await fetch('/api/health', {
+                    headers: {
+                        'X-Access-Password': password
+                    }
+                });
+                
+                // Health endpoint doesn't require auth, but let's test with chat
+                const testResponse = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Access-Password': password
+                    },
+                    body: JSON.stringify({ message: 'test' })
+                });
+
+                return testResponse.status !== 401;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        loginButton.addEventListener('click', async () => {
+            const password = passwordInput.value.trim();
+            if (!password) return;
+
+            loginButton.disabled = true;
+            loginButton.textContent = 'Verifying...';
+            errorMessage.classList.add('hidden');
+
+            const isValid = await verifyPassword(password);
+            
+            if (isValid) {
+                localStorage.setItem('logan_ai_password', password);
+                accessPassword = password;
+                showMain();
+                passwordInput.value = '';
+            } else {
+                errorMessage.classList.remove('hidden');
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
+
+            loginButton.disabled = false;
+            loginButton.textContent = 'Access Chatbot';
+        });
+
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                loginButton.click();
+            }
+        });
+
+        logoutBtn.addEventListener('click', logout);
+
+        // Check if already logged in
+        if (accessPassword) {
+            verifyPassword(accessPassword).then(isValid => {
+                if (isValid) {
+                    showMain();
+                } else {
+                    logout();
+                }
+            });
+        } else {
+            showLogin();
+        }
+
+        // Chat functionality
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+
+        let isTyping = false;
+
+        function addMessage(content, type, sources = []) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = type === 'user' ? 'Y' : 'L';
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = content.replace(/\n/g, '<br>');
+
+            if (sources && sources.length > 0) {
+                const sourcesDiv = document.createElement('div');
+                sourcesDiv.className = 'sources';
+                sourcesDiv.innerHTML = '<div class="sources-title">📚 Sources:</div>';
+                sources.forEach(source => {
+                    const link = document.createElement('a');
+                    link.href = source.url;
+                    link.className = 'source-link';
+                    link.target = '_blank';
+                    link.textContent = `${source.title} (${source.source})`;
+                    sourcesDiv.appendChild(link);
+                });
+                contentDiv.appendChild(sourcesDiv);
+            }
+
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTyping() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant';
+            typingDiv.id = 'typing-indicator';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = 'L';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
+            
+            typingDiv.appendChild(avatar);
+            typingDiv.appendChild(contentDiv);
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideTyping() {
+            const typing = document.getElementById('typing-indicator');
+            if (typing) {
+                typing.remove();
+            }
+        }
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message || isTyping) return;
+
+            // Add user message
+            addMessage(message, 'user');
+            userInput.value = '';
+
+            // Disable input
+            isTyping = true;
+            sendButton.disabled = true;
+            userInput.disabled = true;
+
+            // Show typing indicator
+            showTyping();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Access-Password': accessPassword
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                if (response.status === 401) {
+                    hideTyping();
+                    addMessage('Session expired. Please log in again.', 'assistant');
+                    setTimeout(logout, 2000);
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Failed to get response');
+                }
+
+                const data = await response.json();
+                
+                // Hide typing and show response
+                hideTyping();
+                addMessage(data.answer, 'assistant', data.sources);
+
+            } catch (error) {
+                hideTyping();
+                addMessage('Sorry, I encountered an error. Please try again.', 'assistant');
+                console.error('Error:', error);
+            }
+
+            // Re-enable input
+            isTyping = false;
+            sendButton.disabled = false;
+            userInput.disabled = false;
+            userInput.focus();
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
