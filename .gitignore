@@ -41,3 +41,4 @@ __pycache__/
 
 # Embeddings (large file - will be created on first run)
 embeddings.json
+.env*.local
