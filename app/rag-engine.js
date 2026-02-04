@@ -100,6 +100,7 @@ class RAGEngine {
       console.log(`✓ Created and saved ${embeddings.length} embeddings`);
     } else {
       console.log(`✓ Created ${embeddings.length} embeddings (not saved - production mode)`);
+    }
   }
 
   /**
