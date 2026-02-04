@@ -32,6 +32,10 @@ class RAGEngine {
       this.embeddings = JSON.parse(embeddingsContent);
       console.log(`Loaded ${this.embeddings.length} existing embeddings`);
     } catch (error) {
+      // In production (Vercel), filesystem is read-only
+      if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+        throw new Error('Embeddings file not found. Please generate embeddings locally and commit to repository.');
+      }
       console.log('No existing embeddings found. Creating new embeddings...');
       await this.createEmbeddings();
     }
@@ -90,9 +94,12 @@ class RAGEngine {
     
     this.embeddings = embeddings;
     
-    // Save embeddings to file
-    await fs.writeFile(this.embeddingsFile, JSON.stringify(embeddings, null, 2));
-    console.log(`✓ Created and saved ${embeddings.length} embeddings`);
+    // Save embeddings to file (skip in production/Vercel due to read-only filesystem)
+    if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
+      await fs.writeFile(this.embeddingsFile, JSON.stringify(embeddings, null, 2));
+      console.log(`✓ Created and saved ${embeddings.length} embeddings`);
+    } else {
+      console.log(`✓ Created ${embeddings.length} embeddings (not saved - production mode)`);
   }
 
   /**
