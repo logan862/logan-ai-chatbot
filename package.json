@@ -2,19 +2,14 @@
   "name": "logan-ai-bot",
   "version": "1.0.0",
   "description": "AI Chatbot for Logan's TikTok Shop Coaching Program",
-  "main": "api/chat.js",
   "scripts": {
-    "build": "echo 'No build needed'"
+    "build": "echo 'Build complete'"
   },
   "keywords": ["tiktok-shop", "ai-chatbot", "rag", "coaching"],
   "author": "Logan Cuffari",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "@langchain/openai": "^0.3.18",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
     "langchain": "^0.3.11",
     "openai": "^4.80.0"
   }
