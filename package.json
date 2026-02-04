@@ -9,8 +9,8 @@
   "author": "Logan Cuffari",
   "license": "ISC",
   "dependencies": {
-    "@langchain/openai": "^0.3.18",
-    "langchain": "^0.3.11",
-    "openai": "^4.80.0"
+    "@langchain/openai": "^1.2.4",
+    "langchain": "^1.2.17",
+    "openai": "^6.17.0"
   }
 }
